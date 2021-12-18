@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Sergey_Kurapov_3025265_Ass3</string>
+    <string name="txt_tracker"><b>Start the tracker. Once the tracker started it tracks your journey, it can be stopped anytime, once it stopped the statistics of your activity available for analysis."</b></string>
+    <string name="btn_tracker_start">Start Tracker</string>
+    <string name="btn_tracker_stop">Stop Tracker</string>
+</resources>
