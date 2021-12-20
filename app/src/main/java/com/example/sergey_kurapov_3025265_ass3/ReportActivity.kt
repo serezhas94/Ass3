@@ -3,6 +3,7 @@ package com.example.sergey_kurapov_3025265_ass3
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
+import android.view.View
 
 
 class ReportActivity: AppCompatActivity()  {
@@ -12,6 +13,9 @@ class ReportActivity: AppCompatActivity()  {
         setContentView(R.layout.activity_report)
 
         val gpxDocument: GPXDocument = intent.getSerializableExtra("gpxDocument") as GPXDocument
+
+        val customView: CustomView = findViewById<View>(R.id.reportView) as CustomView
+        customView.setGraphArray(gpxDocument)
 
         // set text values on text views
         val txtAverageSpeed = findViewById<TextView>(R.id.txtAvSpeed)

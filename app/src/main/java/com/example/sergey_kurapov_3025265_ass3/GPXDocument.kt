@@ -9,7 +9,7 @@ class GPXDocument : Serializable{
 
     private val xmlHeader = "<?xml version='1.0' encoding='UTF-8' standalone='no' ?>"
 
-    private val gpsPoints: ArrayList<GPSUnit> = ArrayList()
+     val gpsPoints: ArrayList<GPSUnit> = ArrayList()
 
     fun  addGPSPoint(gpsPoint: GPSUnit){
         gpsPoints.add(gpsPoint)
