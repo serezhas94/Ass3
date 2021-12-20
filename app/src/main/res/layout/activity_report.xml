@@ -6,9 +6,42 @@
     android:layout_height="match_parent"
     tools:context=".ReportActivity">
 
+    <TextView
+        android:id="@+id/txtAvSpeed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="@string/average_speed" />
+    <TextView
+        android:id="@+id/txtTotalDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtAvSpeed"
+        android:text="@string/total_distance" />
+    <TextView
+        android:id="@+id/txtTimeTaken"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtTotalDistance"
+        android:text="@string/time_taken" />
+
+    <TextView
+        android:id="@+id/txtMinAltitude"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtTimeTaken"
+        android:text="@string/min_altitude" />
+    <TextView
+        android:id="@+id/txtMaxAltitude"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtMinAltitude"
+        android:text="@string/max_altitude" />
+
     <com.example.sergey_kurapov_3025265_ass3.CustomView
         android:id="@+id/reportView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtMaxAltitude"/>
 
 </RelativeLayout>

@@ -3,4 +3,9 @@
     <string name="txt_tracker"><b>Start the tracker. Once the tracker started it tracks your journey, it can be stopped anytime, once it stopped the statistics of your activity available for analysis."</b></string>
     <string name="btn_tracker_start">Start Tracker</string>
     <string name="btn_tracker_stop">Stop Tracker</string>
+    <string name="average_speed">Average Speed:</string>
+    <string name="total_distance">Total Distance:</string>
+    <string name="time_taken">Time Taken:</string>
+    <string name="min_altitude">Min  Altitude:</string>
+    <string name="max_altitude">Max Altitude:</string>
 </resources>

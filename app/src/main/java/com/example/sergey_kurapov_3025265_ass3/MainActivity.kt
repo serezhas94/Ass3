@@ -47,9 +47,7 @@ class MainActivity : AppCompatActivity() {
     private  var gpxDocument: GPXDocument? = null
 
     private val externalUri: Uri = MediaStore.Files.getContentUri("external")
-    private val filesPath = "Documents"
-    private val displayName = "GPSTracs"
-    private val filesFormat = "application/xml"
+    private val filesPath = "Documents/GPSTracs"
 
     // variable object Location Callback which extends LocationCallback class
     // and overrides onLocationResult method
@@ -99,6 +97,10 @@ class MainActivity : AppCompatActivity() {
 
                 // open custom view
                 val reportActivity = Intent(this, ReportActivity::class.java)
+
+                // pass gpxDocument data to report activity
+                reportActivity.putExtra("gpxDocument",gpxDocument)
+
                 this.startActivity(reportActivity)
             }
         }
@@ -189,8 +191,6 @@ class MainActivity : AppCompatActivity() {
                 // get external directory
                 val resolver = this.contentResolver
                 val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
-                    //put(MediaStore.MediaColumns.MIME_TYPE, filesFormat)
                     put(MediaStore.MediaColumns.RELATIVE_PATH, filesPath)
                 }
                 val uri: Uri? = resolver.insert(externalUri, contentValues)
@@ -207,7 +207,7 @@ class MainActivity : AppCompatActivity() {
                 val date: Date = Calendar.getInstance().time
                 val sdf = SimpleDateFormat("yyyy_MM_dd_hh_mm_ss")
                 val fileName = sdf.format(date)
-                val gpsFile = File("$path/$fileName.txt")
+                val gpsFile = File(path,"$fileName.txt")
 
                 if (!gpsFile.exists()) {
                     gpsFile.createNewFile()
@@ -241,7 +241,7 @@ class MainActivity : AppCompatActivity() {
             result = contentURI!!.path
         } else {
             cursor.moveToFirst()
-            val idx: Int = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+            val idx: Int = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA)
             result = cursor.getString(idx)
             cursor.close()
         }
