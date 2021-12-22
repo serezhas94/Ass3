@@ -5,9 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.location.Location
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 
@@ -15,21 +13,14 @@ import android.os.Looper
 import android.provider.MediaStore
 
 import android.widget.Button
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.net.toFile
 import com.google.android.gms.location.*
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.*
 import android.os.Environment
 
-
-
+import java.io.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private val requestPermissionLocation = 10
 
     private var locationProviderClient: FusedLocationProviderClient? = null
+
     private
     lateinit var locationRequest: LocationRequest
 
@@ -44,17 +36,16 @@ class MainActivity : AppCompatActivity() {
     private val appInterval: Long = 5000
     private val appFastestInterval: Long = 5000
 
-    private  var gpxDocument: GPXDocument? = null
-
-    private val externalUri: Uri = MediaStore.Files.getContentUri("external")
-    private val filesPath = "Documents/GPSTracs"
+    private var gpxDocument: GPXDocument? = null
+    private val subFolder = "GPSTracs"
+    private val mimeType = "files/xml"
 
     // variable object Location Callback which extends LocationCallback class
     // and overrides onLocationResult method
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
 
-            onLocationChanged(locationResult.lastLocation)
+                onLocationChanged(locationResult.lastLocation)
         }
     }
 
@@ -67,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         // set on click listener
         btnTracker.setOnClickListener {
 
-            if(!isStarted){
+            if (!isStarted) {
 
                 // start monitor activity
                 if (checkPermissionForLocation(this)) {
@@ -82,8 +73,7 @@ class MainActivity : AppCompatActivity() {
                     startTracker()
                 }
 
-            }
-            else if(isStarted){
+            } else if (isStarted) {
 
                 // reset it
                 btnTracker.setText(R.string.btn_tracker_start)
@@ -99,24 +89,28 @@ class MainActivity : AppCompatActivity() {
                 val reportActivity = Intent(this, ReportActivity::class.java)
 
                 // pass gpxDocument data to report activity
-                reportActivity.putExtra("gpxDocument",gpxDocument)
+                reportActivity.putExtra("gpxDocument", gpxDocument)
 
                 this.startActivity(reportActivity)
             }
         }
     }
+
     private fun checkPermissionForLocation(context: Context): Boolean {
 
         // check permissions - added in Manifest
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED){
+                PackageManager.PERMISSION_GRANTED
+            ) {
                 true
-            }else{
+            } else {
                 // Show the permission request
-                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
-                    requestPermissionLocation )
+                ActivityCompat.requestPermissions(
+                    this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    requestPermissionLocation
+                )
                 false
             }
         } else {
@@ -127,10 +121,21 @@ class MainActivity : AppCompatActivity() {
     fun onLocationChanged(location: Location) {
 
         // get location properties and set as GPSUnit
-        val gpsUnit = GPSUnit(location.latitude,location.longitude, location.altitude, location.speed )
+        val gpsUnit =
+            GPSUnit(location.latitude, location.longitude, location.altitude, location.speed)
+
+        if (gpxDocument?.gpsPoints?.size!! > 0) {
+
+            val lastPoint = gpxDocument?.gpsPoints!!.last()
+            if (gpsUnit.latitude == lastPoint.latitude && gpsUnit.longitude == lastPoint.longitude) {
+                // same record exits - remove last one and add updated one after if
+                gpxDocument?.removeGPSPoint(gpxDocument?.gpsPoints!!.last())
+            }
+        }
 
         // add record to GPX document
         gpxDocument?.addGPSPoint(gpsUnit)
+
     }
 
     private fun startTracker() {
@@ -139,12 +144,12 @@ class MainActivity : AppCompatActivity() {
             interval = appInterval
             fastestInterval = appFastestInterval
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            maxWaitTime= 100
+            maxWaitTime = 100
         }
 
         // Create LocationSettingsRequest object using location request
         val builder = LocationSettingsRequest.Builder()
-        builder.addLocationRequest(locationRequest!!)
+        builder.addLocationRequest(locationRequest)
         val locationSettingsRequest = builder.build()
 
         // check location setting
@@ -154,8 +159,15 @@ class MainActivity : AppCompatActivity() {
         locationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         // new Google API SDK v11 uses getFusedLocationProviderClient(this)
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             return
         }
 
@@ -163,8 +175,10 @@ class MainActivity : AppCompatActivity() {
         gpxDocument = GPXDocument()
 
         // start location Callback
-        locationProviderClient!!.requestLocationUpdates(locationRequest, locationCallback,
-            Looper.myLooper())
+        locationProviderClient!!.requestLocationUpdates(
+            locationRequest, locationCallback,
+            Looper.myLooper()
+        )
     }
 
     private fun stopTracker() {
@@ -177,75 +191,92 @@ class MainActivity : AppCompatActivity() {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1
-        );
+        )
 
         ActivityCompat.requestPermissions(
             this,
             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1
-        );
+        )
 
         // write if data exist
         if (gpxDocument != null) {
             try {
 
-                // get external directory
-                val resolver = this.contentResolver
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, filesPath)
-                }
-                val uri: Uri? = resolver.insert(externalUri, contentValues)
+                val relativeLocation =
+                    Environment.DIRECTORY_DOCUMENTS + File.separator.toString() + subFolder
 
-                val path = getRealPathFromURI(uri)
-                val fileDir = File(path)
-
-                // create external directory if doesn't exist
-                if (!fileDir.exists()) {
-                    fileDir.mkdirs()
-                }
-
-                // create a new file if doesn't exist
+                // create a new file name with extension
                 val date: Date = Calendar.getInstance().time
                 val sdf = SimpleDateFormat("yyyy_MM_dd_hh_mm_ss")
                 val fileName = sdf.format(date)
-                val gpsFile = File(path,"$fileName.txt")
+                val displayName = "$fileName.xml"
 
-                if (!gpsFile.exists()) {
-                    gpsFile.createNewFile()
+                // depends on version it runs
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
-                    gpsFile.setWritable(true)
-                    gpsFile.setReadable(true)
+                    // by using content values, content resolver and file descriptor
+                    val contentValues = ContentValues()
+                    contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
+                    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+                    contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, relativeLocation)
+                    contentValues.put(MediaStore.Video.Media.TITLE, fileName)
+                    contentValues.put(
+                        MediaStore.Video.Media.DATE_ADDED,
+                        System.currentTimeMillis() / 1000
+                    )
+                    contentValues.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis())
+
+                    val resolver = this.contentResolver
+                    val contentUri = MediaStore.Files.getContentUri("external")
+                    val uri = resolver.insert(contentUri, contentValues)
+
+                    // open file descriptor
+                    val xmlDesc = contentResolver.openFileDescriptor(uri!!, "w")
+
+                    // open file output stream
+                    val out = FileOutputStream(xmlDesc!!.fileDescriptor)
+                    val outWriter = OutputStreamWriter(out)
+
+                    // write to file data
+                    outWriter.write(gpxDocument?.toXmlString())
+
+                    // close streams
+                    outWriter.close()
+                    out.close()
+                    xmlDesc.close()
+
+                } else {
+
+                    // older versions - get external path dir
+                    val fileDir = Environment.getExternalStoragePublicDirectory(relativeLocation)
+                        .toString()
+
+                    // create new file
+                    val gpsFile = File(fileDir, displayName)
+
+                    if (!gpsFile.exists()) {
+                        gpsFile.createNewFile()
+
+                        gpsFile.setWritable(true)
+                        gpsFile.setReadable(true)
+                    }
+
+                    // create file output stream
+                    val out = FileOutputStream(gpsFile)
+
+                    // create write stream
+                    val outWriter = OutputStreamWriter(out)
+
+                    // write to file data
+                    outWriter.write(gpxDocument?.toXmlString())
+
+                    // close streams
+                    outWriter.close()
+                    out.close()
                 }
-
-                // create file output stream
-                val fOut = FileOutputStream(gpsFile)
-                // create write stream
-                val outWriter = OutputStreamWriter(fOut)
-
-                // write to file data
-                outWriter.write(gpxDocument?.toXmlString())
-
-                // close streams
-                outWriter.close()
-                fOut.close()
-
-
             } catch (e: Exception) {
-                e.printStackTrace();
+                e.printStackTrace()
             }
         }
     }
-    private fun getRealPathFromURI(contentURI: Uri?): String? {
-        val result: String?
-        val cursor: Cursor? = contentResolver.query(contentURI!!, null, null, null, null)
-        if (cursor == null) { // Source is Dropbox or other similar local file path
-            result = contentURI!!.path
-        } else {
-            cursor.moveToFirst()
-            val idx: Int = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA)
-            result = cursor.getString(idx)
-            cursor.close()
-        }
-        return result
-    }
-
 }

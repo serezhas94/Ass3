@@ -19,14 +19,19 @@ class ReportActivity: AppCompatActivity()  {
 
         // set text values on text views
         val txtAverageSpeed = findViewById<TextView>(R.id.txtAvSpeed)
-        (txtAverageSpeed.text.toString() + " " + gpxDocument.getAverageSpeed()).also { txtAverageSpeed.text = it }
+        var speedInKmH = (gpxDocument.getAverageSpeed() * 3.6)
+        // if value too small - no movement sho as zero
+        if ( speedInKmH < 0.0001){
+            speedInKmH = 0.0
+        }
+        (txtAverageSpeed.text.toString() + " " + String.format("%.2f",speedInKmH) + " in km/h").also { txtAverageSpeed.text = it }
 
         val txtTotalDistance = findViewById<TextView>(R.id.txtTotalDistance)
-        (txtTotalDistance.text.toString() + " " + gpxDocument.getTotalDistance() + " in metres").also { txtTotalDistance.text = it }
+        (txtTotalDistance.text.toString() + " " + String.format("%.2f", gpxDocument.getTotalDistance()) + " in metres").also { txtTotalDistance.text = it }
 
         val timeTaken = gpxDocument.getTimeTaken()/ 1000.0 // in seconds
         val txtTimeTaken = findViewById<TextView>(R.id.txtTimeTaken)
-        (txtTimeTaken.text.toString() + " " + timeTaken + " seconds").also { txtTimeTaken.text = it }
+        (txtTimeTaken.text.toString() + " " + String.format("%.2f", timeTaken)  + " seconds").also { txtTimeTaken.text = it }
 
         val txtMinAltitude = findViewById<TextView>(R.id.txtMinAltitude)
         (txtMinAltitude.text.toString() + " " + gpxDocument.getMinAltitude()).also { txtMinAltitude.text = it }

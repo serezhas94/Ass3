@@ -15,6 +15,10 @@ class GPXDocument : Serializable{
         gpsPoints.add(gpsPoint)
     }
 
+    fun removeGPSPoint(gpsPoint: GPSUnit){
+        gpsPoints.remove(gpsPoint)
+    }
+
     // get average speed
     fun getAverageSpeed():Float{
         var sumAllSpeeds = 0.0f
@@ -35,7 +39,7 @@ class GPXDocument : Serializable{
 
         var totalTime = 0L
         if(gpsPoints.size > 1)
-            totalTime = gpsPoints.last().unitTime.time - gpsPoints.first().unitTime.time
+            totalTime = gpsPoints.last().unitTime.time.minus(gpsPoints.first().unitTime.time)
 
         return totalTime
     }
